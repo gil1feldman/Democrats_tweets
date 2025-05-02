@@ -2,83 +2,115 @@
 <html lang="he">
 <head>
   <meta charset="UTF-8">
-  <title>פיד חדשות - Ynet, הארץ, וואלה, N12, כאן 11</title>
+  <title>עדכוני חדשות - Ynet, וואלה, הארץ, N12, כאן 11</title>
+  <script src="https://feednami.com/js/feednami-client.js"></script>
   <style>
-    body { font-family: Arial, sans-serif; direction: rtl; padding: 20px; background-color: #f9f9f9; }
-    h2 { color: #333; }
-    .feed-container { margin-bottom: 40px; }
-    .item { background: white; margin: 10px 0; padding: 10px; border-radius: 8px; box-shadow: 0 0 4px #ccc; }
-    .item a { text-decoration: none; color: #0077cc; }
-    button { margin-bottom: 20px; padding: 8px 12px; }
+    body {
+      font-family: Arial, sans-serif;
+      direction: rtl;
+      background-color: #f7f7f7;
+      padding: 20px;
+    }
+    h1 {
+      text-align: center;
+    }
+    .feed-container {
+      background: #fff;
+      border-radius: 8px;
+      margin-bottom: 40px;
+      padding: 15px;
+      box-shadow: 0 0 8px rgba(0,0,0,0.1);
+    }
+    .feed-container h2 {
+      border-bottom: 1px solid #ccc;
+      padding-bottom: 8px;
+      margin-bottom: 15px;
+    }
+    .item {
+      margin-bottom: 12px;
+      padding-bottom: 10px;
+      border-bottom: 1px dashed #ddd;
+    }
+    .item a {
+      font-weight: bold;
+      color: #0077cc;
+      text-decoration: none;
+    }
+    .item small {
+      display: block;
+      color: #555;
+      margin-top: 4px;
+    }
+    button {
+      padding: 8px 16px;
+      font-size: 16px;
+      margin-bottom: 20px;
+    }
   </style>
 </head>
 <body>
 
-  <h1>עדכוני חדשות</h1>
+  <h1>פיד חדשות מתעדכן</h1>
   <button onclick="loadAllFeeds()">רענן הכל</button>
 
-  <div class="feed-container" id="ynet">
+  <div id="ynet" class="feed-container">
     <h2>Ynet - מבזקים</h2>
+    <div class="items"></div>
   </div>
 
-  <div class="feed-container" id="walla">
+  <div id="walla" class="feed-container">
     <h2>וואלה - חדשות</h2>
+    <div class="items"></div>
   </div>
 
-  <div class="feed-container" id="haaretz">
+  <div id="haaretz" class="feed-container">
     <h2>הארץ - חדשות</h2>
+    <div class="items"></div>
   </div>
 
-  <div class="feed-container" id="n12">
-    <h2>N12 - חדשות 12</h2>
+  <div id="n12" class="feed-container">
+    <h2>N12 - חדשות</h2>
+    <div class="items"></div>
   </div>
 
-  <div class="feed-container" id="kan11">
+  <div id="kan11" class="feed-container">
     <h2>כאן 11 - חדשות</h2>
+    <div class="items"></div>
   </div>
 
   <script>
     const feeds = [
-      {
-        id: "ynet",
-        url: "https://www.ynet.co.il/Integration/StoryRss3254.xml"
-      },
-      {
-        id: "walla",
-        url: "https://rss.walla.co.il/feed/1"
-      },
-      {
-        id: "haaretz",
-        url: "https://www.haaretz.co.il/cmlink/1.1473547"
-      },
-      {
-        id: "n12",
-        url: "https://www.mako.co.il/rss/News-24-hours.xml"
-      },
-      {
-        id: "kan11",
-        url: "https://www.kan.org.il/rss/rss.aspx?catId=1"
-      }
+      { id: 'ynet', url: 'https://www.ynet.co.il/Integration/StoryRss3254.xml' },
+      { id: 'walla', url: 'https://rss.walla.co.il/feed/1' },
+      { id: 'haaretz', url: 'https://www.haaretz.co.il/cmlink/1.1473547' },
+      { id: 'n12', url: 'https://www.mako.co.il/rss/News-24-hours.xml' },
+      { id: 'kan11', url: 'https://www.kan.org.il/rss/rss.aspx?catId=1' }
     ];
 
     function loadFeed(feed) {
-      const apiUrl = `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(feed.url)}`;
-      fetch(apiUrl)
-        .then(res => res.json())
-        .then(data => {
-          const container = document.getElementById(feed.id);
-          container.innerHTML = `<h2>${container.querySelector('h2').innerText}</h2>`;
-          data.items.slice(0, 5).forEach(item => {
+      const container = document.querySelector(`#${feed.id} .items`);
+      container.innerHTML = "טוען עדכונים...";
+
+      feednami.load(feed.url)
+        .then(response => {
+          if (response.error) {
+            container.innerHTML = "שגיאה בטעינת הפיד.";
+            return;
+          }
+          const items = response.feed.entries.slice(0, 5);
+          container.innerHTML = "";
+          items.forEach(item => {
             const div = document.createElement("div");
             div.className = "item";
-            div.innerHTML = `<strong>${item.title}</strong><br>
-                             <small>${new Date(item.pubDate).toLocaleString()}</small><br>
-                             <a href="${item.link}" target="_blank">לכתבה המלאה</a>`;
+            div.innerHTML = `
+              <a href="${item.link}" target="_blank">${item.title}</a>
+              <small>${new Date(item.pubDate || item.publishedDate || "").toLocaleString()}</small>
+            `;
             container.appendChild(div);
           });
         })
         .catch(err => {
-          document.getElementById(feed.id).innerHTML += "<p>שגיאה בטעינת הפיד</p>";
+          container.innerHTML = "שגיאה בטעינה.";
         });
     }
 
@@ -86,7 +118,7 @@
       feeds.forEach(loadFeed);
     }
 
-    // טען בהתחלה
+    // טען את הפידים עם פתיחת הדף
     loadAllFeeds();
   </script>
 
