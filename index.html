@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="he">
+<head>
+  <meta charset="UTF-8">
+  <title>פיד חדשות - Ynet, הארץ, וואלה, N12, כאן 11</title>
+  <style>
+    body { font-family: Arial, sans-serif; direction: rtl; padding: 20px; background-color: #f9f9f9; }
+    h2 { color: #333; }
+    .feed-container { margin-bottom: 40px; }
+    .item { background: white; margin: 10px 0; padding: 10px; border-radius: 8px; box-shadow: 0 0 4px #ccc; }
+    .item a { text-decoration: none; color: #0077cc; }
+    button { margin-bottom: 20px; padding: 8px 12px; }
+  </style>
+</head>
+<body>
+
+  <h1>עדכוני חדשות</h1>
+  <button onclick="loadAllFeeds()">רענן הכל</button>
+
+  <div class="feed-container" id="ynet">
+    <h2>Ynet - מבזקים</h2>
+  </div>
+
+  <div class="feed-container" id="walla">
+    <h2>וואלה - חדשות</h2>
+  </div>
+
+  <div class="feed-container" id="haaretz">
+    <h2>הארץ - חדשות</h2>
+  </div>
+
+  <div class="feed-container" id="n12">
+    <h2>N12 - חדשות 12</h2>
+  </div>
+
+  <div class="feed-container" id="kan11">
+    <h2>כאן 11 - חדשות</h2>
+  </div>
+
+  <script>
+    const feeds = [
+      {
+        id: "ynet",
+        url: "https://www.ynet.co.il/Integration/StoryRss3254.xml"
+      },
+      {
+        id: "walla",
+        url: "https://rss.walla.co.il/feed/1"
+      },
+      {
+        id: "haaretz",
+        url: "https://www.haaretz.co.il/cmlink/1.1473547"
+      },
+      {
+        id: "n12",
+        url: "https://www.mako.co.il/rss/News-24-hours.xml"
+      },
+      {
+        id: "kan11",
+        url: "https://www.kan.org.il/rss/rss.aspx?catId=1"
+      }
+    ];
+
+    function loadFeed(feed) {
+      const apiUrl = `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(feed.url)}`;
+      fetch(apiUrl)
+        .then(res => res.json())
+        .then(data => {
+          const container = document.getElementById(feed.id);
+          container.innerHTML = `<h2>${container.querySelector('h2').innerText}</h2>`;
+          data.items.slice(0, 5).forEach(item => {
+            const div = document.createElement("div");
+            div.className = "item";
+            div.innerHTML = `<strong>${item.title}</strong><br>
+                             <small>${new Date(item.pubDate).toLocaleString()}</small><br>
+                             <a href="${item.link}" target="_blank">לכתבה המלאה</a>`;
+            container.appendChild(div);
+          });
+        })
+        .catch(err => {
+          document.getElementById(feed.id).innerHTML += "<p>שגיאה בטעינת הפיד</p>";
+        });
+    }
+
+    function loadAllFeeds() {
+      feeds.forEach(loadFeed);
+    }
+
+    // טען בהתחלה
+    loadAllFeeds();
+  </script>
+
+</body>
+</html>
