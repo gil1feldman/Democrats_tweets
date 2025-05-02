@@ -2,13 +2,13 @@
 <html lang="he">
 <head>
   <meta charset="UTF-8">
-  <title>עדכוני חדשות - Ynet, וואלה, הארץ, N12, כאן 11</title>
+  <title>פיד חדשות - Ynet, וואלה, הארץ, N12, כאן 11</title>
   <script src="https://feednami.com/js/feednami-client.js"></script>
   <style>
     body {
       font-family: Arial, sans-serif;
       direction: rtl;
-      background-color: #f7f7f7;
+      background-color: #f0f0f0;
       padding: 20px;
     }
     h1 {
@@ -17,17 +17,19 @@
     .feed-container {
       background: #fff;
       border-radius: 8px;
-      margin-bottom: 40px;
-      padding: 15px;
+      margin: 30px auto;
+      padding: 15px 20px;
+      max-width: 800px;
       box-shadow: 0 0 8px rgba(0,0,0,0.1);
     }
     .feed-container h2 {
       border-bottom: 1px solid #ccc;
       padding-bottom: 8px;
       margin-bottom: 15px;
+      color: #333;
     }
     .item {
-      margin-bottom: 12px;
+      margin-bottom: 15px;
       padding-bottom: 10px;
       border-bottom: 1px dashed #ddd;
     }
@@ -38,44 +40,45 @@
     }
     .item small {
       display: block;
-      color: #555;
+      color: #666;
       margin-top: 4px;
     }
     button {
-      padding: 8px 16px;
+      display: block;
+      margin: 0 auto 40px;
+      padding: 10px 20px;
       font-size: 16px;
-      margin-bottom: 20px;
     }
   </style>
 </head>
 <body>
 
-  <h1>פיד חדשות מתעדכן</h1>
+  <h1>עדכוני חדשות חיים</h1>
   <button onclick="loadAllFeeds()">רענן הכל</button>
 
   <div id="ynet" class="feed-container">
     <h2>Ynet - מבזקים</h2>
-    <div class="items"></div>
+    <div class="items">טוען...</div>
   </div>
 
   <div id="walla" class="feed-container">
     <h2>וואלה - חדשות</h2>
-    <div class="items"></div>
+    <div class="items">טוען...</div>
   </div>
 
   <div id="haaretz" class="feed-container">
     <h2>הארץ - חדשות</h2>
-    <div class="items"></div>
+    <div class="items">טוען...</div>
   </div>
 
   <div id="n12" class="feed-container">
     <h2>N12 - חדשות</h2>
-    <div class="items"></div>
+    <div class="items">טוען...</div>
   </div>
 
   <div id="kan11" class="feed-container">
     <h2>כאן 11 - חדשות</h2>
-    <div class="items"></div>
+    <div class="items">טוען...</div>
   </div>
 
   <script>
@@ -83,22 +86,24 @@
       { id: 'ynet', url: 'https://www.ynet.co.il/Integration/StoryRss3254.xml' },
       { id: 'walla', url: 'https://rss.walla.co.il/feed/1' },
       { id: 'haaretz', url: 'https://www.haaretz.co.il/cmlink/1.1473547' },
-      { id: 'n12', url: 'https://www.mako.co.il/rss/News-24-hours.xml' },
+      { id: 'n12', url: 'https://rcs.mako.co.il/rss/news-israel.xml' },
       { id: 'kan11', url: 'https://www.kan.org.il/rss/rss.aspx?catId=1' }
     ];
 
     function loadFeed(feed) {
       const container = document.querySelector(`#${feed.id} .items`);
-      container.innerHTML = "טוען עדכונים...";
+      container.innerHTML = "טוען נתונים...";
 
       feednami.load(feed.url)
         .then(response => {
-          if (response.error) {
+          if (response.error || !response.feed || !response.feed.entries) {
             container.innerHTML = "שגיאה בטעינת הפיד.";
             return;
           }
+
           const items = response.feed.entries.slice(0, 5);
           container.innerHTML = "";
+
           items.forEach(item => {
             const div = document.createElement("div");
             div.className = "item";
@@ -109,7 +114,7 @@
             container.appendChild(div);
           });
         })
-        .catch(err => {
+        .catch(() => {
           container.innerHTML = "שגיאה בטעינה.";
         });
     }
@@ -118,7 +123,7 @@
       feeds.forEach(loadFeed);
     }
 
-    // טען את הפידים עם פתיחת הדף
+    // טוען אוטומטית עם פתיחת הדף
     loadAllFeeds();
   </script>
 
