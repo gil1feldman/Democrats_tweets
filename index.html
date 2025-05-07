@@ -1,16 +1,60 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="he" dir="rtl">
 <head>
   <meta charset="UTF-8">
-  <title>הטמעת ציוצים מגיליון Google Sheets (TSV)</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>הציוצים החשובים של "הדמוקרטים המקורי"</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #f4f4f4;
+      color: #333;
+      padding: 0;
+    }
+
+    header {
+      background-color: #1da1f2;
+      color: white;
+      padding: 20px 10px;
+      text-align: center;
+      font-size: 1.8em;
+      font-weight: bold;
+    }
+
+    #tweets-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px;
+      gap: 40px;
+      max-width: 700px;
+      margin: auto;
+    }
+
+    blockquote.twitter-tweet {
+      max-width: 100%;
+    }
+
+    @media (max-width: 600px) {
+      header {
+        font-size: 1.4em;
+        padding: 15px 5px;
+      }
+
+      #tweets-container {
+        padding: 10px;
+        gap: 30px;
+      }
+    }
+  </style>
 </head>
 <body>
 
-<h2>ציוצים מתוך Google Sheets</h2>
+<header>הציוצים החשובים של "הדמוקרטים המקורי"</header>
 <div id="tweets-container"></div>
 
 <script>
-  // קישור ה-TSV שפרסמת
   const sheetUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRn0ijYjgc_iQtda2YJCCKaIRy_e8PFdAgYZpRb_BORlxxDWKwhvPkB-5OB_3B0OM6F4Ug6ZckpeXIe/pub?output=tsv";
 
   fetch(sheetUrl)
@@ -18,10 +62,8 @@
     .then(tsv => {
       const lines = tsv.trim().split('\n');
       for (let line of lines) {
-        // חילוץ ה-URL מהשורה (עמודה ראשונה)
         const tweetUrl = line.split('\t')[0].trim();
 
-        // תמיכה גם ב-x.com וגם ב-twitter.com
         const match = tweetUrl.match(/(?:twitter|x)\.com\/([^\/]+)\/status\/(\d+)/);
         if (match) {
           const username = match[1];
@@ -35,7 +77,6 @@
         }
       }
 
-      // טען את הסקריפט של טוויטר
       const script = document.createElement("script");
       script.async = true;
       script.src = "https://platform.twitter.com/widgets.js";
@@ -44,7 +85,7 @@
     })
     .catch(error => {
       console.error("שגיאה בטעינת הגיליון:", error);
-      document.body.innerText = "שגיאה בטעינת הגיליון.";
+      document.body.innerHTML = "<p style='text-align:center; color:red;'>אירעה שגיאה בטעינת הציוצים.</p>";
     });
 </script>
 
