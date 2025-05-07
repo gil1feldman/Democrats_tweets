@@ -10,16 +10,26 @@
       font-family: 'Segoe UI', sans-serif;
       background-color: #f4f4f4;
       color: #333;
-      padding: 0;
     }
 
     header {
       background-color: #1da1f2;
       color: white;
-      padding: 20px 10px;
+      padding: 20px;
       text-align: center;
       font-size: 1.8em;
       font-weight: bold;
+    }
+
+    #filter-container {
+      text-align: center;
+      margin: 20px 0;
+    }
+
+    select {
+      padding: 8px 12px;
+      font-size: 1em;
+      border-radius: 6px;
     }
 
     #tweets-container {
@@ -32,14 +42,9 @@
       margin: auto;
     }
 
-    blockquote.twitter-tweet {
-      max-width: 100%;
-    }
-
     @media (max-width: 600px) {
       header {
         font-size: 1.4em;
-        padding: 15px 5px;
       }
 
       #tweets-container {
@@ -52,41 +57,83 @@
 <body>
 
 <header>הציוצים החשובים של "הדמוקרטים המקורי"</header>
+
+<div id="filter-container">
+  סנן לפי יוזר:
+  <select id="user-filter">
+    <option value="all">הצג הכל</option>
+  </select>
+</div>
+
 <div id="tweets-container"></div>
 
 <script>
   const sheetUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRn0ijYjgc_iQtda2YJCCKaIRy_e8PFdAgYZpRb_BORlxxDWKwhvPkB-5OB_3B0OM6F4Ug6ZckpeXIe/pub?output=tsv";
 
+  const tweetsContainer = document.getElementById("tweets-container");
+  const userFilter = document.getElementById("user-filter");
+
+  let allTweets = []; // נאחסן כאן את כל הציוצים עם היוזרים
+
   fetch(sheetUrl)
     .then(response => response.text())
     .then(tsv => {
       const lines = tsv.trim().split('\n');
+      const uniqueUsers = new Set();
+
       for (let line of lines) {
         const tweetUrl = line.split('\t')[0].trim();
-
         const match = tweetUrl.match(/(?:twitter|x)\.com\/([^\/]+)\/status\/(\d+)/);
         if (match) {
           const username = match[1];
           const tweetId = match[2];
           const finalUrl = `https://twitter.com/${username}/status/${tweetId}`;
 
-          const blockquote = document.createElement("blockquote");
-          blockquote.className = "twitter-tweet";
-          blockquote.innerHTML = `<a href="${finalUrl}"></a>`;
-          document.getElementById("tweets-container").appendChild(blockquote);
+          allTweets.push({ username, tweetUrl: finalUrl });
+          uniqueUsers.add(username);
         }
       }
 
-      const script = document.createElement("script");
-      script.async = true;
-      script.src = "https://platform.twitter.com/widgets.js";
-      script.charset = "utf-8";
-      document.body.appendChild(script);
+      // בנה את רשימת היוזרים לבחירה
+      Array.from(uniqueUsers).sort().forEach(user => {
+        const option = document.createElement("option");
+        option.value = user;
+        option.textContent = user;
+        userFilter.appendChild(option);
+      });
+
+      // הצג את כל הציוצים בהתחלה
+      renderTweets(allTweets);
+
+      // סינון לפי יוזר
+      userFilter.addEventListener("change", () => {
+        const selected = userFilter.value;
+        const filteredTweets = selected === "all"
+          ? allTweets
+          : allTweets.filter(tweet => tweet.username === selected);
+        renderTweets(filteredTweets);
+      });
     })
     .catch(error => {
       console.error("שגיאה בטעינת הגיליון:", error);
-      document.body.innerHTML = "<p style='text-align:center; color:red;'>אירעה שגיאה בטעינת הציוצים.</p>";
+      tweetsContainer.innerHTML = "<p style='text-align:center; color:red;'>אירעה שגיאה בטעינת הציוצים.</p>";
     });
+
+  function renderTweets(tweets) {
+    tweetsContainer.innerHTML = "";
+    tweets.forEach(({ tweetUrl }) => {
+      const blockquote = document.createElement("blockquote");
+      blockquote.className = "twitter-tweet";
+      blockquote.innerHTML = `<a href="${tweetUrl}"></a>`;
+      tweetsContainer.appendChild(blockquote);
+    });
+
+    const script = document.createElement("script");
+    script.async = true;
+    script.src = "https://platform.twitter.com/widgets.js";
+    script.charset = "utf-8";
+    document.body.appendChild(script);
+  }
 </script>
 
 </body>
